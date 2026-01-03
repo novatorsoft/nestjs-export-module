@@ -1,6 +1,6 @@
 {
   "name": "nestjs-export-module",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A module for exporting data in NestJS",
   "author": "Novatorsoft",
   "private": false,
@@ -33,10 +33,15 @@
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "json-2-csv": "^5.5.10",
+    "nestjs-factory-pattern-module": "^1.1.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
-  "peerDependencies": {},
+  "peerDependencies": {
+    "nestjs-factory-pattern-module": "^1.1.0",
+    "json-2-csv": "^5.5.10"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
