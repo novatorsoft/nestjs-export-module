@@ -1,4 +1,4 @@
-import { CsvService } from './providers/csv/csv.service';
+import { CsvService } from './providers';
 import { DATA_EXPORTER_FACTORY_TOKEN } from './constants';
 import { DataExporterService } from './data-exporter.service';
 import { FactoryModule } from 'nestjs-factory-pattern-module';

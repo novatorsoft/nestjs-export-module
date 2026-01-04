@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { CsvDataExportArgs } from './providers/csv/dto';
 import { DATA_EXPORTER_FACTORY_TOKEN } from './constants';
 import { DataExportResult } from './dto';
 import { DataExporterBaseService } from './data-exporter-base.service';
@@ -40,7 +41,15 @@ describe('DataExporterService', () => {
 
   describe('exportAsync', () => {
     it('should call factory service and return export result', async () => {
-      const testData: Array<object> = [{ id: 1, name: 'Test' }];
+      const testDataExportArgs: CsvDataExportArgs = {
+        type: DataExporterType.CSV,
+        data: [{ id: 1, name: 'Test' }],
+        options: {
+          delimiter: ',',
+          quote: '"',
+          encoding: 'utf-8' as BufferEncoding,
+        },
+      };
       const expectedResult: DataExportResult = {
         mimeType: 'text/csv',
         extension: 'csv',
@@ -52,19 +61,27 @@ describe('DataExporterService', () => {
       );
       mockDataExporter.exportAsync.mockResolvedValue(expectedResult);
 
-      const result = await service.exportAsync(DataExporterType.CSV, testData);
+      const result = await service.exportAsync(testDataExportArgs);
 
       expect(
         jest.spyOn(mockFactoryService, 'getProviderServiceAsync'),
       ).toHaveBeenCalledWith(DataExporterType.CSV);
       expect(jest.spyOn(mockDataExporter, 'exportAsync')).toHaveBeenCalledWith(
-        testData,
+        testDataExportArgs,
       );
       expect(result).toEqual(expectedResult);
     });
 
     it('should handle empty data array', async () => {
-      const testData: Array<object> = [];
+      const testDataExportArgs: CsvDataExportArgs = {
+        type: DataExporterType.CSV,
+        data: [],
+        options: {
+          delimiter: ',',
+          quote: '"',
+          encoding: 'utf-8',
+        },
+      };
       const expectedResult: DataExportResult = {
         mimeType: 'text/csv',
         extension: 'csv',
@@ -76,22 +93,30 @@ describe('DataExporterService', () => {
       );
       mockDataExporter.exportAsync.mockResolvedValue(expectedResult);
 
-      const result = await service.exportAsync(DataExporterType.CSV, testData);
+      const result = await service.exportAsync(testDataExportArgs);
 
       expect(
         jest.spyOn(mockFactoryService, 'getProviderServiceAsync'),
       ).toHaveBeenCalledWith(DataExporterType.CSV);
       expect(jest.spyOn(mockDataExporter, 'exportAsync')).toHaveBeenCalledWith(
-        testData,
+        testDataExportArgs,
       );
       expect(result).toEqual(expectedResult);
     });
 
     it('should handle large data arrays', async () => {
-      const testData: Array<object> = Array.from({ length: 1000 }, (_, i) => ({
-        id: i + 1,
-        name: `Test ${i + 1}`,
-      }));
+      const testDataExportArgs: CsvDataExportArgs = {
+        type: DataExporterType.CSV,
+        data: Array.from({ length: 1000 }, (_, i) => ({
+          id: i + 1,
+          name: `Test ${i + 1}`,
+        })),
+        options: {
+          delimiter: ',',
+          quote: '"',
+          encoding: 'utf-8',
+        },
+      };
       const expectedResult: DataExportResult = {
         mimeType: 'text/csv',
         extension: 'csv',
@@ -103,30 +128,46 @@ describe('DataExporterService', () => {
       );
       mockDataExporter.exportAsync.mockResolvedValue(expectedResult);
 
-      const result = await service.exportAsync(DataExporterType.CSV, testData);
+      const result = await service.exportAsync(testDataExportArgs);
 
       expect(
         jest.spyOn(mockFactoryService, 'getProviderServiceAsync'),
       ).toHaveBeenCalledWith(DataExporterType.CSV);
       expect(jest.spyOn(mockDataExporter, 'exportAsync')).toHaveBeenCalledWith(
-        testData,
+        testDataExportArgs,
       );
       expect(result).toEqual(expectedResult);
     });
 
     it('should propagate errors from factory service', async () => {
-      const testData: Array<object> = [{ id: 1, name: 'Test' }];
+      const testDataExportArgs: CsvDataExportArgs = {
+        type: DataExporterType.CSV,
+        data: [{ id: 1, name: 'Test' }],
+        options: {
+          delimiter: ',',
+          quote: '"',
+          encoding: 'utf-8' as BufferEncoding,
+        },
+      };
       const error = new Error('Factory service error');
 
       mockFactoryService.getProviderServiceAsync.mockRejectedValue(error);
 
-      await expect(
-        service.exportAsync(DataExporterType.CSV, testData),
-      ).rejects.toThrow('Factory service error');
+      await expect(service.exportAsync(testDataExportArgs)).rejects.toThrow(
+        'Factory service error',
+      );
     });
 
     it('should propagate errors from data exporter', async () => {
-      const testData: Array<object> = [{ id: 1, name: 'Test' }];
+      const testDataExportArgs: CsvDataExportArgs = {
+        type: DataExporterType.CSV,
+        data: [{ id: 1, name: 'Test' }],
+        options: {
+          delimiter: ',',
+          quote: '"',
+          encoding: 'utf-8' as BufferEncoding,
+        },
+      };
       const error = new Error('Export error');
 
       mockFactoryService.getProviderServiceAsync.mockResolvedValue(
@@ -134,13 +175,21 @@ describe('DataExporterService', () => {
       );
       mockDataExporter.exportAsync.mockRejectedValue(error);
 
-      await expect(
-        service.exportAsync(DataExporterType.CSV, testData),
-      ).rejects.toThrow('Export error');
+      await expect(service.exportAsync(testDataExportArgs)).rejects.toThrow(
+        'Export error',
+      );
     });
 
     it('should work with different exporter types', async () => {
-      const testData: Array<object> = [{ id: 1, name: 'Test' }];
+      const testDataExportArgs: CsvDataExportArgs = {
+        type: DataExporterType.CSV,
+        data: [{ id: 1, name: 'Test' }],
+        options: {
+          delimiter: ',',
+          quote: '"',
+          encoding: 'utf-8' as BufferEncoding,
+        },
+      };
       const expectedResult: DataExportResult = {
         mimeType: 'application/json',
         extension: 'json',
@@ -152,7 +201,7 @@ describe('DataExporterService', () => {
       );
       mockDataExporter.exportAsync.mockResolvedValue(expectedResult);
 
-      const result = await service.exportAsync(DataExporterType.CSV, testData);
+      const result = await service.exportAsync(testDataExportArgs);
 
       expect(
         jest.spyOn(mockFactoryService, 'getProviderServiceAsync'),
