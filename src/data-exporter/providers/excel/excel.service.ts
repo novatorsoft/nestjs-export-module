@@ -51,7 +51,7 @@ export class ExcelService extends DataExporterBaseService {
       result = Object.keys(firstRowData).map((property) => {
         const columnOption = options?.columnOptions?.[property];
         return {
-          header: property,
+          header: options?.headersMap?.[property] ?? property,
           key: property,
           ...columnOption,
         };
