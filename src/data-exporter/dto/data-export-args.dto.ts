@@ -1,4 +1,5 @@
-import { CsvDataExportArgs } from '../providers';
+import { CsvDataExportArgs, ExcelDataExportArgs } from '../providers';
+
 import { DataExporterType } from '../enum';
 
 export class DataExportBaseArgs {
@@ -6,4 +7,4 @@ export class DataExportBaseArgs {
   data: Array<object>;
 }
 
-export type DataExportArgs = CsvDataExportArgs;
+export type DataExportArgs = CsvDataExportArgs | ExcelDataExportArgs;

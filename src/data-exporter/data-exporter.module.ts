@@ -1,6 +1,7 @@
 import { CsvService } from './providers';
 import { DATA_EXPORTER_FACTORY_TOKEN } from './constants';
 import { DataExporterService } from './data-exporter.service';
+import { ExcelService } from './providers/excel/excel.service';
 import { FactoryModule } from 'nestjs-factory-pattern-module';
 import { Module } from '@nestjs/common';
 
@@ -10,7 +11,7 @@ import { Module } from '@nestjs/common';
       factoryName: DATA_EXPORTER_FACTORY_TOKEN,
     }),
   ],
-  providers: [CsvService, DataExporterService],
+  providers: [DataExporterService, CsvService, ExcelService],
   exports: [DataExporterService],
 })
 export class DataExporterModule {}
