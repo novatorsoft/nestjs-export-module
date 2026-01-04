@@ -208,7 +208,7 @@ describe('CsvService', () => {
         type: DataExporterType.CSV,
         data: [{ id: 1, name: 'Test' }],
         options: {
-          encoding: 'utf-8',
+          encoding: 'utf8',
         },
       };
       const result: DataExportResult =

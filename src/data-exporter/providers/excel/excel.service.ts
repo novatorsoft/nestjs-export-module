@@ -57,8 +57,6 @@ export class ExcelService extends DataExporterBaseService {
         };
       });
 
-    console.log(result);
-
     return result;
   }
 }
