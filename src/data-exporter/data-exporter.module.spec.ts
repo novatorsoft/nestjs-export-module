@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { CsvService } from './providers/csv/csv.service';
+import { ExcelService } from './providers/excel/excel.service';
 import { DataExporterModule } from './data-exporter.module';
 import { DataExporterService } from './data-exporter.service';
 
@@ -29,6 +30,12 @@ describe('DataExporterModule', () => {
     expect(service).toBeInstanceOf(CsvService);
   });
 
+  it('should provide ExcelService', () => {
+    const service = module.get<ExcelService>(ExcelService);
+    expect(service).toBeDefined();
+    expect(service).toBeInstanceOf(ExcelService);
+  });
+
   it('should export DataExporterService', () => {
     const exportedService =
       module.get<DataExporterService>(DataExporterService);
@@ -39,8 +46,10 @@ describe('DataExporterModule', () => {
     const dataExporterService =
       module.get<DataExporterService>(DataExporterService);
     const csvService = module.get<CsvService>(CsvService);
+    const excelService = module.get<ExcelService>(ExcelService);
 
     expect(dataExporterService).toBeDefined();
     expect(csvService).toBeDefined();
+    expect(excelService).toBeDefined();
   });
 });

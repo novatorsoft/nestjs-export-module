@@ -1,8 +1,8 @@
 import * as ExcelJS from 'exceljs';
 
 import { DATA_EXPORTER_FACTORY_TOKEN } from '../../constants';
-import { DataExportResult } from 'src/data-exporter/dto';
-import { DataExporterBaseService } from 'src/data-exporter/data-exporter-base.service';
+import { DataExportResult } from '../../dto';
+import { DataExporterBaseService } from '../../data-exporter-base.service';
 import { DataExporterType } from '../../enum';
 import { ExcelDataExportArgs } from './dto';
 import { FactoryProvider } from 'nestjs-factory-pattern-module';
@@ -32,26 +32,32 @@ export class ExcelService extends DataExporterBaseService {
     };
   }
 
-  getHeaders(
+  private getHeaders(
     firstRowData: object,
     options?: ExcelDataExportArgs['options'],
   ): Array<Partial<ExcelJS.Column>> {
     let result: Array<Partial<ExcelJS.Column>> = [];
 
     if (options?.headers)
-      result = options?.headers?.map((header) => ({
-        header: options?.headersMap?.[header] ?? header,
-        key: header,
-        ...(options?.columnOptions?.[header] &&
-          options?.columnOptions?.[header]),
-      }));
+      result = options?.headers?.map((header) => {
+        const columnOption = options?.columnOptions?.[header] ?? {};
+        return {
+          header: options?.headersMap?.[header] ?? header,
+          key: header,
+          ...columnOption,
+        };
+      });
     else
-      result = Object.keys(firstRowData).map((property) => ({
-        header: property,
-        key: property,
-        ...(options?.columnOptions?.[property] &&
-          options?.columnOptions?.[property]),
-      }));
+      result = Object.keys(firstRowData).map((property) => {
+        const columnOption = options?.columnOptions?.[property];
+        return {
+          header: property,
+          key: property,
+          ...columnOption,
+        };
+      });
+
+    console.log(result);
 
     return result;
   }

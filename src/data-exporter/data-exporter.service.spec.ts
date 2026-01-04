@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { CsvDataExportArgs } from './providers/csv/dto';
+import { ExcelDataExportArgs } from './providers/excel/dto';
 import { DATA_EXPORTER_FACTORY_TOKEN } from './constants';
 import { DataExportResult } from './dto';
 import { DataExporterBaseService } from './data-exporter-base.service';
@@ -178,6 +179,71 @@ describe('DataExporterService', () => {
       await expect(service.exportAsync(testDataExportArgs)).rejects.toThrow(
         'Export error',
       );
+    });
+
+    it('should work with Excel exporter type', async () => {
+      const testDataExportArgs: ExcelDataExportArgs = {
+        type: DataExporterType.EXCEL,
+        data: [{ id: 1, name: 'Test' }],
+        options: {
+          sheetName: 'TestSheet',
+        },
+      };
+      const expectedResult: DataExportResult = {
+        mimeType:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        extension: 'xlsx',
+        data: Buffer.from('excel data', 'utf-8'),
+      };
+
+      mockFactoryService.getProviderServiceAsync.mockResolvedValue(
+        mockDataExporter,
+      );
+      mockDataExporter.exportAsync.mockResolvedValue(expectedResult);
+
+      const result = await service.exportAsync(testDataExportArgs);
+
+      expect(
+        jest.spyOn(mockFactoryService, 'getProviderServiceAsync'),
+      ).toHaveBeenCalledWith(DataExporterType.EXCEL);
+      expect(jest.spyOn(mockDataExporter, 'exportAsync')).toHaveBeenCalledWith(
+        testDataExportArgs,
+      );
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should work with Excel exporter with columnOptions', async () => {
+      const testDataExportArgs: ExcelDataExportArgs = {
+        type: DataExporterType.EXCEL,
+        data: [{ id: 1, name: 'Test', price: 99.99 }],
+        options: {
+          columnOptions: {
+            id: { width: 20 },
+            price: { style: { numFmt: '#,##0.00' } },
+          },
+        },
+      };
+      const expectedResult: DataExportResult = {
+        mimeType:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        extension: 'xlsx',
+        data: Buffer.from('excel data', 'utf-8'),
+      };
+
+      mockFactoryService.getProviderServiceAsync.mockResolvedValue(
+        mockDataExporter,
+      );
+      mockDataExporter.exportAsync.mockResolvedValue(expectedResult);
+
+      const result = await service.exportAsync(testDataExportArgs);
+
+      expect(
+        jest.spyOn(mockFactoryService, 'getProviderServiceAsync'),
+      ).toHaveBeenCalledWith(DataExporterType.EXCEL);
+      expect(jest.spyOn(mockDataExporter, 'exportAsync')).toHaveBeenCalledWith(
+        testDataExportArgs,
+      );
+      expect(result).toEqual(expectedResult);
     });
 
     it('should work with different exporter types', async () => {
