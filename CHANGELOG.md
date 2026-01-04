@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.1](https://github.com/novatorsoft/nestjs-export-module/compare/v1.0.0...v1.0.1) (2026-01-04)
+
+### Bug Fixes
+
+* update header mapping in Excel export to use headersMap for improved flexibility ([48abf59](https://github.com/novatorsoft/nestjs-export-module/commit/48abf59c6fd3b538d4d1b2a3942e72faa90a0ba3))
+
 ## [1.0.0](https://github.com/novatorsoft/nestjs-export-module/compare/v0.0.1...v0.0.1) (2026-01-04)
 
 ### Features

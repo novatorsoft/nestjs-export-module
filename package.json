@@ -1,6 +1,6 @@
 {
   "name": "nestjs-export-module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A module for exporting data in NestJS",
   "author": "Novatorsoft",
   "private": false,
