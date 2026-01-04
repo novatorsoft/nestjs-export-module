@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { CsvService } from './csv.service';
+import { DataExportResult } from '../../dto';
 
 describe('CsvService', () => {
   let service: CsvService;
@@ -14,5 +16,125 @@ describe('CsvService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('exportAsync', () => {
+    it('should export empty array to CSV', async () => {
+      const data: Array<object> = [];
+      const result: DataExportResult = await service.exportAsync(data);
+
+      expect(result).toBeDefined();
+      expect(result.mimeType).toBe('text/csv');
+      expect(result.extension).toBe('csv');
+      expect(result.data).toBeInstanceOf(Buffer);
+    });
+
+    it('should export single object to CSV', async () => {
+      const data: Array<object> = [
+        { id: 1, name: 'Test', email: 'test@example.com' },
+      ];
+      const result: DataExportResult = await service.exportAsync(data);
+
+      expect(result).toBeDefined();
+      expect(result.mimeType).toBe('text/csv');
+      expect(result.extension).toBe('csv');
+      expect(result.data).toBeInstanceOf(Buffer);
+      const csvContent = result.data.toString('utf-8');
+      expect(csvContent).toContain('id');
+      expect(csvContent).toContain('name');
+      expect(csvContent).toContain('email');
+      expect(csvContent).toContain('1');
+      expect(csvContent).toContain('Test');
+      expect(csvContent).toContain('test@example.com');
+    });
+
+    it('should export multiple objects to CSV', async () => {
+      const data: Array<object> = [
+        { id: 1, name: 'Test 1', email: 'test1@example.com' },
+        { id: 2, name: 'Test 2', email: 'test2@example.com' },
+        { id: 3, name: 'Test 3', email: 'test3@example.com' },
+      ];
+      const result: DataExportResult = await service.exportAsync(data);
+
+      expect(result).toBeDefined();
+      expect(result.mimeType).toBe('text/csv');
+      expect(result.extension).toBe('csv');
+      expect(result.data).toBeInstanceOf(Buffer);
+      const csvContent = result.data.toString('utf-8');
+      expect(csvContent).toContain('1');
+      expect(csvContent).toContain('2');
+      expect(csvContent).toContain('3');
+      expect(csvContent).toContain('Test 1');
+      expect(csvContent).toContain('Test 2');
+      expect(csvContent).toContain('Test 3');
+    });
+
+    it('should handle objects with different properties', async () => {
+      const data: Array<object> = [
+        { id: 1, name: 'Test' },
+        { id: 2, name: 'Test 2', age: 25 },
+        { id: 3, name: 'Test 3', age: 30, city: 'Istanbul' },
+      ];
+      const result: DataExportResult = await service.exportAsync(data);
+
+      expect(result).toBeDefined();
+      expect(result.mimeType).toBe('text/csv');
+      expect(result.extension).toBe('csv');
+      expect(result.data).toBeInstanceOf(Buffer);
+    });
+
+    it('should handle special characters in data', async () => {
+      const data: Array<object> = [
+        { id: 1, name: 'Test, with comma', description: 'Test "quotes"' },
+      ];
+      const result: DataExportResult = await service.exportAsync(data);
+
+      expect(result).toBeDefined();
+      expect(result.mimeType).toBe('text/csv');
+      expect(result.extension).toBe('csv');
+      expect(result.data).toBeInstanceOf(Buffer);
+    });
+
+    it('should handle numeric values correctly', async () => {
+      const data: Array<object> = [
+        { id: 1, price: 99.99, quantity: 10 },
+        { id: 2, price: 199.99, quantity: 5 },
+      ];
+      const result: DataExportResult = await service.exportAsync(data);
+
+      expect(result).toBeDefined();
+      expect(result.mimeType).toBe('text/csv');
+      expect(result.extension).toBe('csv');
+      expect(result.data).toBeInstanceOf(Buffer);
+      const csvContent = result.data.toString('utf-8');
+      expect(csvContent).toContain('99.99');
+      expect(csvContent).toContain('199.99');
+    });
+
+    it('should handle boolean values correctly', async () => {
+      const data: Array<object> = [
+        { id: 1, active: true, verified: false },
+        { id: 2, active: false, verified: true },
+      ];
+      const result: DataExportResult = await service.exportAsync(data);
+
+      expect(result).toBeDefined();
+      expect(result.mimeType).toBe('text/csv');
+      expect(result.extension).toBe('csv');
+      expect(result.data).toBeInstanceOf(Buffer);
+    });
+
+    it('should handle null values', async () => {
+      const data: Array<object> = [
+        { id: 1, name: 'Test', email: null },
+        { id: 2, name: null, email: 'test@example.com' },
+      ];
+      const result: DataExportResult = await service.exportAsync(data);
+
+      expect(result).toBeDefined();
+      expect(result.mimeType).toBe('text/csv');
+      expect(result.extension).toBe('csv');
+      expect(result.data).toBeInstanceOf(Buffer);
+    });
   });
 });
