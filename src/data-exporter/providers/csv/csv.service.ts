@@ -22,7 +22,7 @@ export class CsvService extends DataExporterBaseService {
     return Promise.resolve({
       mimeType: 'text/csv',
       extension: 'csv',
-      data: Buffer.from(csv ?? '', dataExportArgs.options?.encoding ?? 'utf-8'),
+      data: Buffer.from(csv, dataExportArgs.options?.encoding ?? 'utf-8'),
     });
   }
 }
