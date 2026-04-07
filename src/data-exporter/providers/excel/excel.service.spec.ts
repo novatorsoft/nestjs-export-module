@@ -2,7 +2,7 @@ import * as ExcelJS from 'exceljs';
 
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { DataExportResult } from '../../dto';
+import { DataExportResult, PaginatedData } from '../../dto';
 import { DataExporterType } from '../../enum';
 import { ExcelDataExportArgs } from './dto';
 import { ExcelService } from './excel.service';
@@ -317,6 +317,107 @@ describe('ExcelService', () => {
 
       expect(result).toBeDefined();
       expect(result.data).toBeInstanceOf(Buffer);
+    });
+
+    it('should export using paginated loader with offset when nextCursor is absent', async () => {
+      const page1 = Array.from({ length: 100 }, (_, i) => ({
+        id: i + 1,
+        name: `Row ${i + 1}`,
+      }));
+      const page2 = [{ id: 101, name: 'Row 101' }];
+
+      type LoaderResult = { data: Array<object>; nextCursor?: string };
+
+      const loader = jest.fn((args: PaginatedData): Promise<LoaderResult> => {
+        if (args.offset === 0) {
+          expect(args.limit).toBe(100);
+          expect(args.nextCursor).toBeUndefined();
+          return Promise.resolve({ data: page1 });
+        }
+        if (args.offset === 100) {
+          expect(args.limit).toBe(100);
+          return Promise.resolve({ data: page2 });
+        }
+        return Promise.resolve({ data: [] });
+      });
+
+      const dataExportArgs: ExcelDataExportArgs = {
+        type: DataExporterType.EXCEL,
+        data: loader,
+      };
+      const result = await service.exportAsync(dataExportArgs);
+
+      expect(loader).toHaveBeenCalledTimes(2);
+      expect(result.data).toBeInstanceOf(Buffer);
+
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(result.data as unknown as ExcelJS.Buffer);
+      const worksheet = workbook.worksheets[0];
+      expect(worksheet.getRow(2).getCell(1).value).toBe(1);
+      expect(worksheet.getRow(102).getCell(1).value).toBe(101);
+    });
+
+    it('should export using paginated loader with nextCursor when present', async () => {
+      const page1 = Array.from({ length: 100 }, (_, i) => ({
+        id: i + 1,
+      }));
+      const page2 = [{ id: 101 }];
+
+      type LoaderResult = { data: Array<object>; nextCursor?: string };
+
+      const loader = jest.fn((args: PaginatedData): Promise<LoaderResult> => {
+        if (args.nextCursor === undefined) {
+          expect(args.offset).toBe(0);
+          expect(args.limit).toBe(100);
+          return Promise.resolve({ data: page1, nextCursor: 'next-page' });
+        }
+        expect(args.nextCursor).toBe('next-page');
+        expect(args.offset).toBeUndefined();
+        return Promise.resolve({ data: page2 });
+      });
+
+      const dataExportArgs: ExcelDataExportArgs = {
+        type: DataExporterType.EXCEL,
+        data: loader,
+      };
+      const result = await service.exportAsync(dataExportArgs);
+
+      expect(loader).toHaveBeenCalledTimes(2);
+      expect(result.data).toBeInstanceOf(Buffer);
+
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(result.data as unknown as ExcelJS.Buffer);
+      const worksheet = workbook.worksheets[0];
+      expect(worksheet.getRow(2).getCell(1).value).toBe(1);
+      expect(worksheet.getRow(102).getCell(1).value).toBe(101);
+    });
+
+    it('should apply options.headers when first page comes from paginated loader', async () => {
+      type LoaderResult = { data: Array<object>; nextCursor?: string };
+
+      const loader = jest.fn((): Promise<LoaderResult> => {
+        return Promise.resolve({
+          data: [{ id: 1, name: 'A', extra: 'x' }],
+        });
+      });
+
+      const dataExportArgs: ExcelDataExportArgs = {
+        type: DataExporterType.EXCEL,
+        data: loader,
+        options: {
+          headers: ['id', 'name'],
+        },
+      };
+      const result = await service.exportAsync(dataExportArgs);
+
+      expect(result.data).toBeInstanceOf(Buffer);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(result.data as unknown as ExcelJS.Buffer);
+      const worksheet = workbook.worksheets[0];
+      expect(worksheet.getRow(1).getCell(1).value).toBe('id');
+      expect(worksheet.getRow(1).getCell(2).value).toBe('name');
+      expect(worksheet.getRow(2).getCell(1).value).toBe(1);
+      expect(worksheet.getRow(2).getCell(2).value).toBe('A');
     });
   });
 });
