@@ -15,17 +15,17 @@ export class CsvService extends DataExporterBaseService {
     dataExportArgs: CsvDataExportArgs,
   ): Promise<DataExportResult> {
     let data: Buffer;
-    if (dataExportArgs.data instanceof Array) {
+    if (Array.isArray(dataExportArgs.data)) {
       data = this.exportObject(dataExportArgs.data, dataExportArgs);
     } else {
       data = await this.exportPaginatedDataAsync(dataExportArgs);
     }
 
-    return Promise.resolve({
+    return {
       mimeType: 'text/csv',
       extension: 'csv',
       data: data,
-    });
+    };
   }
 
   private exportObject(

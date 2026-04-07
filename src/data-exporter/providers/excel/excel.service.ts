@@ -20,7 +20,7 @@ export class ExcelService extends DataExporterBaseService {
       dataExportArgs.options?.sheetName ?? 'Sheet1',
     );
 
-    if (dataExportArgs.data instanceof Array) {
+    if (Array.isArray(dataExportArgs.data)) {
       worksheet.columns = this.getHeaders(
         dataExportArgs.data.at(0) ?? {},
         dataExportArgs.options,
