@@ -6,10 +6,15 @@ export class PaginatedData {
   limit?: number;
   offset?: number;
   nextCursor?: string;
+  data?: Record<string, any>;
 }
 
 export class DataExportBaseArgs {
   type: DataExporterType;
+  paginationOptions?: {
+    limit?: number;
+    data?: Record<string, any>;
+  };
   data:
     | Array<object>
     | ((args: PaginatedData) => Promise<{

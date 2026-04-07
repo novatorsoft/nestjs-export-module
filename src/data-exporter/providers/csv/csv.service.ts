@@ -49,7 +49,7 @@ export class CsvService extends DataExporterBaseService {
   private async exportPaginatedDataAsync(
     dataExportArgs: CsvDataExportArgs,
   ): Promise<Buffer> {
-    const limit = 100;
+    const limit = dataExportArgs.paginationOptions?.limit ?? 100;
     const encoding = dataExportArgs.options?.encoding ?? 'utf-8';
     const newline = Buffer.from('\n', encoding);
 
@@ -67,6 +67,9 @@ export class CsvService extends DataExporterBaseService {
       )({
         limit,
         ...(result.nextCursor ? { nextCursor: result.nextCursor } : { offset }),
+        ...(dataExportArgs?.paginationOptions?.data && {
+          data: dataExportArgs?.paginationOptions?.data,
+        }),
       });
 
       if (!result.data.length) break;

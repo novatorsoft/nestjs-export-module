@@ -41,7 +41,7 @@ export class ExcelService extends DataExporterBaseService {
     dataExportArgs: ExcelDataExportArgs,
     worksheet: ExcelJS.Worksheet,
   ): Promise<void> {
-    const limit = 100;
+    const limit = dataExportArgs.paginationOptions?.limit ?? 100;
     let offset = 0;
     let result: { data: Array<object>; nextCursor?: string } = {
       data: [],
@@ -55,6 +55,9 @@ export class ExcelService extends DataExporterBaseService {
       )({
         limit,
         ...(result.nextCursor ? { nextCursor: result.nextCursor } : { offset }),
+        ...(dataExportArgs?.paginationOptions?.data && {
+          data: dataExportArgs?.paginationOptions?.data,
+        }),
       });
 
       if (offset === 0)
