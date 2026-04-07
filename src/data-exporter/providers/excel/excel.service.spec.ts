@@ -1,8 +1,8 @@
 import * as ExcelJS from 'exceljs';
 
+import { DataExportResult, PaginationArgs } from '../../dto';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { DataExportResult, PaginatedData } from '../../dto';
 import { DataExporterType } from '../../enum';
 import { ExcelDataExportArgs } from './dto';
 import { ExcelService } from './excel.service';
@@ -328,7 +328,7 @@ describe('ExcelService', () => {
 
       type LoaderResult = { data: Array<object>; nextCursor?: string };
 
-      const loader = jest.fn((args: PaginatedData): Promise<LoaderResult> => {
+      const loader = jest.fn((args: PaginationArgs): Promise<LoaderResult> => {
         if (args.offset === 0) {
           expect(args.limit).toBe(100);
           expect(args.nextCursor).toBeUndefined();
@@ -365,7 +365,7 @@ describe('ExcelService', () => {
 
       type LoaderResult = { data: Array<object>; nextCursor?: string };
 
-      const loader = jest.fn((args: PaginatedData): Promise<LoaderResult> => {
+      const loader = jest.fn((args: PaginationArgs): Promise<LoaderResult> => {
         if (args.nextCursor === undefined) {
           expect(args.offset).toBe(0);
           expect(args.limit).toBe(100);

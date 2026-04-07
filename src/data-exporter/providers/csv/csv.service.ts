@@ -1,4 +1,4 @@
-import { DataExportResult, PaginatedData } from '../../dto';
+import { DataExportResult, PaginationArgs } from '../../dto';
 
 import { CsvDataExportArgs } from './dto';
 import { DATA_EXPORTER_FACTORY_TOKEN } from '../../constants';
@@ -18,7 +18,7 @@ export class CsvService extends DataExporterBaseService {
     if (Array.isArray(dataExportArgs.data)) {
       data = this.exportObject(dataExportArgs.data, dataExportArgs);
     } else {
-      data = await this.exportPaginatedDataAsync(dataExportArgs);
+      data = await this.exportPaginationArgsAsync(dataExportArgs);
     }
 
     return {
@@ -46,7 +46,7 @@ export class CsvService extends DataExporterBaseService {
     return Buffer.from(data, dataExportArgs.options?.encoding ?? 'utf-8');
   }
 
-  private async exportPaginatedDataAsync(
+  private async exportPaginationArgsAsync(
     dataExportArgs: CsvDataExportArgs,
   ): Promise<Buffer> {
     const limit = dataExportArgs.paginationOptions?.limit ?? 100;
@@ -62,7 +62,7 @@ export class CsvService extends DataExporterBaseService {
     do {
       result = await (
         dataExportArgs.data as (
-          args: PaginatedData,
+          args: PaginationArgs,
         ) => Promise<{ data: Array<object>; nextCursor?: string }>
       )({
         limit,

@@ -1,8 +1,8 @@
+import { DataExportResult, PaginationArgs } from '../../dto';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { CsvDataExportArgs } from './dto';
 import { CsvService } from './csv.service';
-import { DataExportResult, PaginatedData } from '../../dto';
 import { DataExporterType } from '../../enum';
 
 describe('CsvService', () => {
@@ -280,7 +280,7 @@ describe('CsvService', () => {
 
       type LoaderResult = { data: Array<object>; nextCursor?: string };
 
-      const loader = jest.fn((args: PaginatedData): Promise<LoaderResult> => {
+      const loader = jest.fn((args: PaginationArgs): Promise<LoaderResult> => {
         if (args.offset === 0) {
           expect(args.limit).toBe(100);
           expect(args.nextCursor).toBeUndefined();
@@ -307,7 +307,8 @@ describe('CsvService', () => {
       expect(csv).toContain('101');
       const lines = csv.split(/\r?\n/).filter((line) => line.length > 0);
       const headerLines = lines.filter(
-        (line) => line.includes('id') && line.includes('name') && /^id[,;]/.test(line),
+        (line) =>
+          line.includes('id') && line.includes('name') && /^id[,;]/.test(line),
       );
       expect(headerLines.length).toBe(1);
     });
@@ -320,7 +321,7 @@ describe('CsvService', () => {
 
       type LoaderResult = { data: Array<object>; nextCursor?: string };
 
-      const loader = jest.fn((args: PaginatedData): Promise<LoaderResult> => {
+      const loader = jest.fn((args: PaginationArgs): Promise<LoaderResult> => {
         if (args.nextCursor === undefined) {
           expect(args.offset).toBe(0);
           expect(args.limit).toBe(100);

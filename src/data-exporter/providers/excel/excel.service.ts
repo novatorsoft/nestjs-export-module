@@ -1,6 +1,6 @@
 import * as ExcelJS from 'exceljs';
 
-import { DataExportResult, PaginatedData } from '../../dto';
+import { DataExportResult, PaginationArgs } from '../../dto';
 
 import { DATA_EXPORTER_FACTORY_TOKEN } from '../../constants';
 import { DataExporterBaseService } from '../../data-exporter-base.service';
@@ -50,7 +50,7 @@ export class ExcelService extends DataExporterBaseService {
     do {
       result = await (
         dataExportArgs.data as (
-          args: PaginatedData,
+          args: PaginationArgs,
         ) => Promise<{ data: Array<object>; nextCursor?: string }>
       )({
         limit,

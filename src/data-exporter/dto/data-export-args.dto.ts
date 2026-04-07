@@ -2,7 +2,7 @@ import { CsvDataExportArgs, ExcelDataExportArgs } from '../providers';
 
 import { DataExporterType } from '../enum';
 
-export class PaginatedData {
+export class PaginationArgs {
   limit?: number;
   offset?: number;
   nextCursor?: string;
@@ -17,7 +17,7 @@ export class DataExportBaseArgs {
   };
   data:
     | Array<object>
-    | ((args: PaginatedData) => Promise<{
+    | ((args: PaginationArgs) => Promise<{
         data: Array<object>;
         nextCursor?: string;
       }>);
