@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/novatorsoft/nestjs-export-module/compare/v1.0.2...v1.1.0) (2026-04-07)
+
+### Features
+
+* enhance CSV export with paginated data support ([1c70319](https://github.com/novatorsoft/nestjs-export-module/commit/1c70319ad5950846f60284c4ebfd01d85e293b9c))
+* enhance data export functionality with pagination options ([e2c91a8](https://github.com/novatorsoft/nestjs-export-module/commit/e2c91a80e66952fa0cf14c7417dbb6c427a66928))
+* implement paginated data loading for Excel exports ([a562563](https://github.com/novatorsoft/nestjs-export-module/commit/a562563b89521d467cee4ba77cc872af0da18bf0))
+
 ## [1.0.2](https://github.com/novatorsoft/nestjs-export-module/compare/v1.0.1...v1.0.2) (2026-03-12)
 
 ## [1.0.1](https://github.com/novatorsoft/nestjs-export-module/compare/v1.0.0...v1.0.1) (2026-01-04)
