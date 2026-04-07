@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { CsvDataExportArgs } from './dto';
 import { CsvService } from './csv.service';
-import { DataExportResult } from '../../dto';
+import { DataExportResult, PaginatedData } from '../../dto';
 import { DataExporterType } from '../../enum';
 
 describe('CsvService', () => {
@@ -269,6 +269,121 @@ describe('CsvService', () => {
       expect(result.mimeType).toBe('text/csv');
       expect(result.extension).toBe('csv');
       expect(result.data).toBeInstanceOf(Buffer);
+    });
+
+    it('should export using paginated loader with offset when nextCursor is absent', async () => {
+      const page1 = Array.from({ length: 100 }, (_, i) => ({
+        id: i + 1,
+        name: `Row ${i + 1}`,
+      }));
+      const page2 = [{ id: 101, name: 'Row 101' }];
+
+      type LoaderResult = { data: Array<object>; nextCursor?: string };
+
+      const loader = jest.fn((args: PaginatedData): Promise<LoaderResult> => {
+        if (args.offset === 0) {
+          expect(args.limit).toBe(100);
+          expect(args.nextCursor).toBeUndefined();
+          return Promise.resolve({ data: page1 });
+        }
+        if (args.offset === 100) {
+          expect(args.limit).toBe(100);
+          return Promise.resolve({ data: page2 });
+        }
+        return Promise.resolve({ data: [] });
+      });
+
+      const dataExportArgs: CsvDataExportArgs = {
+        type: DataExporterType.CSV,
+        data: loader,
+      };
+      const result = await service.exportAsync(dataExportArgs);
+
+      expect(loader).toHaveBeenCalledTimes(2);
+      expect(result.data).toBeInstanceOf(Buffer);
+      const csv = result.data.toString('utf-8');
+      expect(csv).toContain('id');
+      expect(csv).toContain('name');
+      expect(csv).toContain('101');
+      const lines = csv.split(/\r?\n/).filter((line) => line.length > 0);
+      const headerLines = lines.filter(
+        (line) => line.includes('id') && line.includes('name') && /^id[,;]/.test(line),
+      );
+      expect(headerLines.length).toBe(1);
+    });
+
+    it('should export using paginated loader with nextCursor when present', async () => {
+      const page1 = Array.from({ length: 100 }, (_, i) => ({
+        id: i + 1,
+      }));
+      const page2 = [{ id: 101 }];
+
+      type LoaderResult = { data: Array<object>; nextCursor?: string };
+
+      const loader = jest.fn((args: PaginatedData): Promise<LoaderResult> => {
+        if (args.nextCursor === undefined) {
+          expect(args.offset).toBe(0);
+          expect(args.limit).toBe(100);
+          return Promise.resolve({ data: page1, nextCursor: 'next-page' });
+        }
+        expect(args.nextCursor).toBe('next-page');
+        expect(args.offset).toBeUndefined();
+        return Promise.resolve({ data: page2 });
+      });
+
+      const dataExportArgs: CsvDataExportArgs = {
+        type: DataExporterType.CSV,
+        data: loader,
+      };
+      const result = await service.exportAsync(dataExportArgs);
+
+      expect(loader).toHaveBeenCalledTimes(2);
+      const csv = result.data.toString('utf-8');
+      expect(csv).toContain('101');
+    });
+
+    it('should apply options.headers when data comes from paginated loader', async () => {
+      type LoaderResult = { data: Array<object>; nextCursor?: string };
+
+      const loader = jest.fn((): Promise<LoaderResult> => {
+        return Promise.resolve({
+          data: [{ id: 1, name: 'A', extra: 'x' }],
+        });
+      });
+
+      const dataExportArgs: CsvDataExportArgs = {
+        type: DataExporterType.CSV,
+        data: loader,
+        options: {
+          headers: ['id', 'name'],
+        },
+      };
+      const result = await service.exportAsync(dataExportArgs);
+
+      const csv = result.data.toString('utf-8');
+      expect(csv).toContain('id');
+      expect(csv).toContain('name');
+      expect(csv).toContain('1');
+      expect(csv).toContain('A');
+      expect(csv).not.toContain('extra');
+    });
+
+    it('should return empty buffer when paginated loader returns empty first page', async () => {
+      type LoaderResult = { data: Array<object>; nextCursor?: string };
+
+      const loader = jest.fn((): Promise<LoaderResult> => {
+        return Promise.resolve({ data: [] });
+      });
+
+      const dataExportArgs: CsvDataExportArgs = {
+        type: DataExporterType.CSV,
+        data: loader,
+      };
+      const result = await service.exportAsync(dataExportArgs);
+
+      expect(loader).toHaveBeenCalledTimes(1);
+      expect(result.data).toBeInstanceOf(Buffer);
+      expect(result.data.length).toBe(0);
     });
   });
 });
